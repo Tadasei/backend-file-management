@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+class File extends Model
+{
+    use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        "name",
+        "path",
+        "mime_type",
+        "size",
+        "fileable_type",
+        "fileable_id",
+    ];
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = "fileables";
+
+    /**
+     * Get the parent fileable model.
+     */
+    public function fileable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+}
