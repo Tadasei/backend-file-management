@@ -48,8 +48,8 @@ class InstallCommand extends Command
 			[
 				// Migration
 				__DIR__ .
-				"/../../stubs/database/migrations/2023_05_13_195531_create_fileables_table.php" => database_path(
-					"migrations/2023_05_13_195531_create_fileables_table.php"
+				"/../../stubs/database/migrations/2023_05_13_195531_create_files_table.php" => database_path(
+					"migrations/2023_05_13_195531_create_files_table.php"
 				),
 
 				// Trait
