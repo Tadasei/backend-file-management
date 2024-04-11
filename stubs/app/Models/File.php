@@ -17,21 +17,7 @@ class File extends Model
 	 *
 	 * @var array<int, string>
 	 */
-	protected $fillable = [
-		"name",
-		"path",
-		"mime_type",
-		"size",
-		"fileable_type",
-		"fileable_id",
-	];
-
-	/**
-	 * The table associated with the model.
-	 *
-	 * @var string
-	 */
-	protected $table = "fileables";
+	protected $fillable = ["name", "path", "mime_type", "size"];
 
 	/**
 	 * Get the parent fileable model.
