@@ -34,7 +34,7 @@ class InstallCommand extends Command
 		// Ensuring required directories exist
 
 		foreach (
-			[app_path("Http/Traits"), app_path("Rules"), app_path("Models")]
+			[app_path("Traits"), app_path("Rules"), app_path("Models")]
 			as $target_directory
 		) {
 			if (!file_exists($target_directory)) {
@@ -54,8 +54,8 @@ class InstallCommand extends Command
 
 				// Trait
 				__DIR__ .
-				"/../../stubs/app/Http/Traits/InteractsWithFiles.php" => app_path(
-					"Http/Traits/InteractsWithFiles.php"
+				"/../../stubs/app/Traits/InteractsWithFiles.php" => app_path(
+					"Traits/InteractsWithFiles.php"
 				),
 
 				// Model
