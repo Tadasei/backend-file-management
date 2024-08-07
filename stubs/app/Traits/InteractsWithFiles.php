@@ -31,6 +31,27 @@ trait InteractsWithFiles
 		}
 	}
 
+	private function storeResourceFileable(
+		Request $request,
+		Model $resource,
+		string $inputName,
+		string $relation,
+		string $storagePath
+	): void {
+		if ($request->hasFile($inputName)) {
+			$uploadedFile = $request[$inputName][0];
+
+			$resource->{$relation}()->save(
+				new File([
+					"name" => $uploadedFile->getClientOriginalName(),
+					"path" => $uploadedFile->storePublicly($storagePath),
+					"mime_type" => $uploadedFile->getClientMimeType(),
+					"size" => $uploadedFile->getSize(),
+				])
+			);
+		}
+	}
+
 	private function updateResourceFileables(
 		Request $request,
 		Model $resource,
@@ -94,6 +115,31 @@ trait InteractsWithFiles
 					])
 				);
 			}
+		}
+	}
+	private function updateResourceFileable(
+		Request $request,
+		Model $resource,
+		string $inputName,
+		string $relation,
+		string $storagePath
+	): void {
+		if (!$request->filled($inputName)) {
+			if ($resource[$relation]) {
+				$path = $resource[$relation]->path;
+
+				$resource->{$relation}()->delete();
+
+				Storage::delete($path);
+			}
+
+			$this->storeResourceFileable(
+				$request,
+				$resource,
+				$inputName,
+				$relation,
+				$storagePath
+			);
 		}
 	}
 
