@@ -54,7 +54,7 @@ class FileUpdate implements ValidationRule
 
 	private function hasValidIdDataType(mixed $value): bool
 	{
-		return $this->usesUuid ? is_string($value) : is_int($value);
+		return $this->usesUuid ? is_string($value) : is_numeric($value);
 	}
 
 	private function isAValidFileId(mixed $value): bool
