@@ -27,6 +27,21 @@ To publish file management utilities, use the following command:
 php artisan file-management:install
 ```
 
+#### Integration with HandleCors Middleware
+
+The package also provides a route file and controller to help integrate Laravel's built-in `HandleCors` middleware with the storage directory's files. This allows you to manage cross-origin file requests and ensure smooth file handling across different domains.
+
+To publish the `HandleCors` middleware integration files, add the `--with-cors` flag to the same command:
+
+```bash
+php artisan file-management:install --with-cors
+```
+
+The route file and controller can be customized to fit your project's CORS policies. You'll find the generated files in the following locations:
+
+- **Route**: `routes/resources/file.php`
+- **Controller**: `app/Http/Controllers/FileController.php`
+
 ### Customization
 
 The generated code serves as a starting point. You can customize and extend it according to your project's requirements. Modify the generated migrations, models, traits and validation rules as needed.
