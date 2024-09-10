@@ -16,7 +16,8 @@ class InstallCommand extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = "file-management:install";
+	protected $signature = 'file-management:install
+							{--with-cors : Add a route and controller to handle cross-site file requests.}';
 	/**
 	 * The console command description.
 	 *
@@ -31,6 +32,10 @@ class InstallCommand extends Command
 	 */
 	public function handle()
 	{
+		// Retrieving options
+
+		$withCors = $this->option("with-cors");
+
 		// Ensuring required directories exist
 
 		foreach (
@@ -72,6 +77,44 @@ class InstallCommand extends Command
 		) {
 			if (!file_exists($targetPath)) {
 				copy($sourcePath, $targetPath);
+			}
+		}
+
+		// Add cors related files when the --with-cors flag is specified
+
+		if ($withCors) {
+			// Ensuring required directories exist
+
+			foreach (
+				[base_path("routes/resources"), app_path("Http/Controllers")]
+				as $target_directory
+			) {
+				if (!file_exists($target_directory)) {
+					mkdir($target_directory, recursive: true);
+				}
+			}
+
+			// Copying files
+
+			foreach (
+				[
+					// Route
+					__DIR__ .
+					"/../../stubs/routes/resources/file.php" => base_path(
+						"routes/resources/file.php"
+					),
+
+					// Controller
+					__DIR__ .
+					"/../../stubs/app/Http/Controllers/FileController.php" => app_path(
+						"Http/Controllers/FileController.php"
+					),
+				]
+				as $sourcePath => $targetPath
+			) {
+				if (!file_exists($targetPath)) {
+					copy($sourcePath, $targetPath);
+				}
 			}
 		}
 
