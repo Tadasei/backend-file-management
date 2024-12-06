@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\File;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
+use Illuminate\Support\Facades\{Gate, Storage};
 
 class FileController extends Controller
 {
@@ -14,6 +15,8 @@ class FileController extends Controller
 	 */
 	public function download(File $file): StreamedResponse
 	{
+		Gate::authorize("download", $file);
+
 		return Storage::download($file->path);
 	}
 }

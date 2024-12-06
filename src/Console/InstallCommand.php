@@ -86,7 +86,11 @@ class InstallCommand extends Command
 			// Ensuring required directories exist
 
 			foreach (
-				[base_path("routes/resources"), app_path("Http/Controllers")]
+				[
+					base_path("routes/resources"),
+					app_path("Http/Controllers"),
+					app_path("Policies"),
+				]
 				as $target_directory
 			) {
 				if (!file_exists($target_directory)) {
@@ -108,6 +112,12 @@ class InstallCommand extends Command
 					__DIR__ .
 					"/../../stubs/app/Http/Controllers/FileController.php" => app_path(
 						"Http/Controllers/FileController.php"
+					),
+
+					// Policy
+					__DIR__ .
+					"/../../stubs/app/Policies/FilePolicy.php" => app_path(
+						"Policies/FilePolicy.php"
 					),
 				]
 				as $sourcePath => $targetPath
