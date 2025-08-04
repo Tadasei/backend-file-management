@@ -2,12 +2,16 @@
 
 namespace Tadasei\BackendFileManagement\Console;
 
+use Closure;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-use Symfony\Component\Process\{PhpExecutableFinder, Process};
+use Symfony\Component\Process\{
+	PhpExecutableFinder,
+	Process
+};
 
 class InstallCommand extends Command
 {
@@ -36,101 +40,129 @@ class InstallCommand extends Command
 
 		$withCors = $this->option("with-cors");
 
-		// Ensuring required directories exist
+		// Publish the scaffolding files
 
-		foreach (
-			[app_path("Traits"), app_path("Rules"), app_path("Models")]
-			as $target_directory
-		) {
-			if (!file_exists($target_directory)) {
-				mkdir($target_directory, recursive: true);
-			}
-		}
+		// Common files
 
-		// Copying files
-
-		foreach (
-			[
-				// Migration
-				__DIR__ .
-				"/../../stubs/database/migrations/2023_05_13_195531_create_files_table.php" => database_path(
-					"migrations/2023_05_13_195531_create_files_table.php"
-				),
-
-				// Trait
-				__DIR__ .
-				"/../../stubs/app/Traits/InteractsWithFiles.php" => app_path(
-					"Traits/InteractsWithFiles.php"
-				),
-
-				// Model
-				__DIR__ . "/../../stubs/app/Models/File.php" => app_path(
-					"Models/File.php"
-				),
-
-				// Validation rule
-				__DIR__ . "/../../stubs/app/Rules/FileUpdate.php" => app_path(
-					"Rules/FileUpdate.php"
-				),
-			]
-			as $sourcePath => $targetPath
-		) {
-			if (!file_exists($targetPath)) {
-				copy($sourcePath, $targetPath);
-			}
-		}
+		$this->publishDirectory(__DIR__ . "/../../stubs/common");
 
 		// Add cors related files when the --with-cors flag is specified
 
 		if ($withCors) {
-			// Ensuring required directories exist
-
-			foreach (
-				[
-					base_path("routes/resources"),
-					app_path("Http/Controllers"),
-					app_path("Policies"),
-				]
-				as $target_directory
-			) {
-				if (!file_exists($target_directory)) {
-					mkdir($target_directory, recursive: true);
-				}
-			}
-
-			// Copying files
-
-			foreach (
-				[
-					// Route
-					__DIR__ .
-					"/../../stubs/routes/resources/file.php" => base_path(
-						"routes/resources/file.php"
-					),
-
-					// Controller
-					__DIR__ .
-					"/../../stubs/app/Http/Controllers/FileController.php" => app_path(
-						"Http/Controllers/FileController.php"
-					),
-
-					// Policy
-					__DIR__ .
-					"/../../stubs/app/Policies/FilePolicy.php" => app_path(
-						"Policies/FilePolicy.php"
-					),
-				]
-				as $sourcePath => $targetPath
-			) {
-				if (!file_exists($targetPath)) {
-					copy($sourcePath, $targetPath);
-				}
-			}
+			$this->publishDirectory(__DIR__ . "/../../stubs/cors");
 		}
 
 		$this->components->info("Scaffolding complete.");
 
-		return 1;
+		return 0;
+	}
+
+	protected function publishDirectory(string $directory): void
+	{
+		$files = $this->listDirectoryFiles($directory);
+
+		// Ensuring target directories exist
+
+		$this->ensureTargetDirectoriesExist($files);
+
+		// Copying files
+
+		$this->copyFiles($files);
+	}
+
+	protected function copyFiles(array $files): void
+	{
+		collect($files)->each(function (array $file) {
+			if (!file_exists($file["target"])) {
+				copy($file["source"], $file["target"]);
+			}
+		});
+	}
+
+	protected function ensureTargetDirectoriesExist(array $files): void
+	{
+		collect($files)
+			->map(
+				fn(array $file) => str_replace(
+					"/{$file["name"]}",
+					"",
+					$file["target"]
+				)
+			)
+			->unique()
+			->each(function (string $targetDirectory) {
+				if (!file_exists($targetDirectory)) {
+					mkdir($targetDirectory, recursive: true);
+				}
+			});
+	}
+
+	protected function listDirectoryFiles(
+		string $directory,
+		?Closure $getTargetFilePath = null,
+		?string $prefix = null
+	): array {
+		$directoryMap = $this->getDirectoryMap(
+			$directory,
+			$getTargetFilePath,
+			$prefix
+		);
+
+		return $this->getDirectoryMapFiles($directoryMap);
+	}
+
+	protected function getDirectoryMapFiles(array $directoryMap): array
+	{
+		return collect($directoryMap)
+			->flatMap(
+				fn(array $item) => key_exists("map", $item)
+					? $this->getDirectoryMapFiles($item["map"])
+					: [$item]
+			)
+			->all();
+	}
+
+	protected function getDirectoryMap(
+		string $directory,
+		?Closure $getTargetFilePath = null,
+		?string $prefix = null
+	): array {
+		$prefix ??= "$directory/";
+
+		$getTargetFilePath ??= fn(string $path): string => $path;
+
+		return collect(scandir($directory))
+			->reject(fn(string $name) => in_array($name, [".", ".."]))
+			->values()
+			->map(function (string $name) use (
+				$directory,
+				$getTargetFilePath,
+				$prefix
+			) {
+				$source = "$directory/$name";
+
+				return [
+					"name" => $name,
+					"source" => $source,
+					...is_dir($source)
+						? [
+							"map" => $this->getDirectoryMap(
+								$source,
+								$getTargetFilePath,
+								$prefix
+							),
+						]
+						: [
+							"target" => $getTargetFilePath(
+								base_path(
+									str_replace($prefix, "", $directory) .
+										"/$name"
+								)
+							),
+						],
+				];
+			})
+			->all();
 	}
 
 	/**
