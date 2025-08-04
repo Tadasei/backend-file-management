@@ -2,11 +2,15 @@
 
 namespace App\Traits;
 
+use App\Enums\FileableType;
 use App\Models\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-use Illuminate\Support\{Facades\Storage, Arr};
+use Illuminate\Support\{
+	Facades\Storage,
+	Arr
+};
 
 trait InteractsWithFiles
 {
@@ -144,11 +148,11 @@ trait InteractsWithFiles
 	}
 
 	private function deleteResourceFileables(
-		string $resourceClass,
+		FileableType $resourceClass,
 		array $resourceIds
 	): void {
 		[$ids, $paths] = Arr::divide(
-			File::where("fileable_type", $resourceClass)
+			File::where("fileable_type", $resourceClass->value)
 				->whereIn("fileable_id", $resourceIds)
 				->pluck("path", "id")
 				->toArray()

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\FileableType;
+
 use Illuminate\Database\Eloquent\{
 	Factories\HasFactory,
 	Relations\MorphTo,
@@ -18,6 +20,18 @@ class File extends Model
 	 * @var array<int, string>
 	 */
 	protected $fillable = ["name", "path", "mime_type", "size"];
+
+	/**
+	 * Get the attributes that should be cast.
+	 *
+	 * @return array<string, string>
+	 */
+	protected function casts(): array
+	{
+		return [
+			"fileable_type" => FileableType::class,
+		];
+	}
 
 	/**
 	 * Get the parent fileable model.
