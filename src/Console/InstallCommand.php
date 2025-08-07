@@ -52,14 +52,23 @@ class InstallCommand extends Command
 			$this->publishDirectory(__DIR__ . "/../../stubs/cors");
 		}
 
+		// Notify of completion
+
 		$this->components->info("Scaffolding complete.");
 
 		return 0;
 	}
 
-	protected function publishDirectory(string $directory): void
-	{
-		$files = $this->listDirectoryFiles($directory);
+	protected function publishDirectory(
+		string $directory,
+		?Closure $getTargetFilePath = null,
+		?string $prefix = null
+	): void {
+		$files = $this->listDirectoryFiles(
+			$directory,
+			$getTargetFilePath,
+			$prefix
+		);
 
 		// Ensuring target directories exist
 
