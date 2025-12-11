@@ -17,6 +17,6 @@ class FileController extends Controller
 	{
 		Gate::authorize("download", $file);
 
-		return Storage::download($file->path);
+		return Storage::download($file->path, $file->name);
 	}
 }
